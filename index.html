@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Educación Digital Buenos Aires</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #1a2340;
+    --pink: #e8195a;
+    --pink-light: #f5c6d8;
+    --teal: #2bc4b4;
+    --teal-light: #c8f0ec;
+    --purple: #7c4dbd;
+    --purple-light: #e4d8f5;
+    --yellow: #f5a623;
+    --yellow-light: #fef3d8;
+    --blue: #4a90d9;
+    --blue-light: #d8eaf8;
+    --green: #3abf7e;
+    --white: #ffffff;
+    --bg: #f7f8fc;
+    --text: #1a2340;
+    --text-muted: #6b7280;
+    --border: #e5e7eb;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Nunito Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+  html, body { width: 100%; overflow-x: hidden; }
+
+  /* ── LOADING ── */
+  #loading-overlay {
+    position: fixed; inset: 0; background: var(--navy);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center; z-index: 9999;
+    transition: opacity 0.4s ease;
+  }
+  #loading-overlay.hidden { opacity: 0; pointer-events: none; }
+  .loader-dot { width: 12px; height: 12px; border-radius: 50%; background: var(--pink); display: inline-block; margin: 0 4px; animation: bounce 1.2s infinite ease-in-out; }
+  .loader-dot:nth-child(2) { animation-delay: 0.2s; }
+  .loader-dot:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes bounce { 0%,80%,100%{transform:scale(0.6);opacity:0.5} 40%{transform:scale(1);opacity:1} }
+  .loader-text { color: rgba(255,255,255,0.6); font-family: 'Nunito', sans-serif; font-size: 13px; margin-top: 16px; }
+
+  /* ── BANNER ── */
+  .update-banner { background: linear-gradient(90deg,var(--pink) 0%,#c4154e 100%); color: white; text-align: center; padding: 7px 16px; font-family: 'Nunito',sans-serif; font-weight: 700; font-size: 12px; display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap; }
+  .update-banner span { opacity: 0.85; }
+  .update-banner strong { font-weight: 900; }
+
+  /* ── NAV ── */
+  nav { background: var(--navy); padding: 0 24px; display: flex; align-items: center; height: 56px; position: sticky; top: 0; z-index: 100; gap: 6px; }
+  .nav-brand { display: flex; align-items: center; gap: 8px; margin-right: 16px; flex-shrink: 0; }
+  .nav-brand-icon { width: 30px; height: 30px; background: var(--pink); border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+  .nav-brand-icon svg { width: 16px; height: 16px; fill: white; }
+  .nav-brand-text { color: white; font-family: 'Nunito',sans-serif; font-weight: 800; font-size: 12px; line-height: 1.2; }
+  .nav-brand-text span { color: var(--pink); display: block; font-size: 10px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; }
+  .nav-links { display: flex; align-items: center; gap: 2px; flex: 1; flex-wrap: wrap; }
+  .nav-btn { color: rgba(255,255,255,0.75); background: none; border: none; cursor: pointer; font-family: 'Nunito',sans-serif; font-weight: 700; font-size: 11px; letter-spacing: 0.3px; text-transform: uppercase; padding: 6px 10px; border-radius: 6px; transition: all 0.2s; white-space: nowrap; position: relative; }
+  .nav-btn:hover { color: white; background: rgba(255,255,255,0.1); }
+  .nav-btn.active { color: var(--pink); background: rgba(232,25,90,0.1); }
+  .nav-btn.active::after { content:''; position: absolute; bottom: -2px; left: 10px; right: 10px; height: 2px; background: var(--pink); border-radius: 2px; }
+  .nav-right { margin-left: auto; display: flex; gap: 8px; flex-shrink: 0; }
+  .btn-gerencia { background: var(--pink); color: white; border: none; cursor: pointer; font-family: 'Nunito',sans-serif; font-weight: 700; font-size: 11px; padding: 7px 12px; border-radius: 8px; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
+  .btn-gerencia:hover { background: #c4154e; transform: translateY(-1px); }
+
+  /* ── SECTIONS ── */
+  .section { display: none; animation: fadeIn 0.3s ease; }
+  .section.active { display: block; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+
+  /* ── HERO ── */
+  .hero { background: var(--navy); padding: 36px 32px 32px; display: flex; align-items: flex-start; gap: 32px; flex-wrap: wrap; }
+  .hero-left { flex: 0 0 240px; min-width: 200px; }
+  .hero-eyebrow { color: var(--pink); font-family: 'Nunito',sans-serif; font-weight: 800; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px; }
+  .hero-title { font-family: 'Nunito',sans-serif; font-weight: 900; font-size: 36px; color: white; line-height: 1.05; margin-bottom: 14px; }
+  .hero-title em { font-style: normal; color: var(--pink); }
+  .hero-desc { color: rgba(255,255,255,0.7); font-size: 13px; line-height: 1.6; margin-bottom: 20px; max-width: 240px; }
+  .btn-hero { background: var(--pink); color: white; border: none; cursor: pointer; font-family: 'Nunito',sans-serif; font-weight: 800; font-size: 12px; padding: 10px 18px; border-radius: 10px; transition: all 0.2s; display: inline-flex; align-items: center; gap: 6px; }
+  .btn-hero:hover { background: #c4154e; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(232,25,90,0.4); }
+
+  /* ── TARJETAS EJES ── */
+  .hero-cards { flex: 1; display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; min-width: 0; }
+  .eje-card { background: white; border-radius: 16px; padding: 22px 20px; text-align: left; position: relative; overflow: hidden; cursor: pointer; transition: transform 0.2s,box-shadow 0.2s; }
+  .eje-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(0,0,0,0.18); }
+  .eje-card-icon { width: 46px; height: 46px; border-radius: 14px; display: flex; align-items: center; justify-content: center; margin-bottom: 12px; }
+  .eje-card-supertitle { font-family: 'Nunito',sans-serif; font-weight: 900; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; }
+  .eje-card-title { font-family: 'Nunito',sans-serif; font-weight: 900; font-size: 15px; color: var(--text); line-height: 1.2; margin-bottom: 10px; }
+  .eje-card-desc { font-size: 11.5px; color: var(--text-muted); line-height: 1.55; margin-bottom: 14px; min-height: 52px; }
+  .eje-card-metrics { display: flex; gap: 14px; margin-bottom: 14px; }
+  .eje-card-metric-val { font-family: 'Nunito',sans-serif; font-weight: 900; font-size: 20px; line-height: 1; }
+  .eje-card-metric-lbl { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
+  .eje-card-cta { font-family: 'Nunito',sans-serif; font-weight: 700; font-size: 11.5px; display: inline-flex; align-items: center; gap: 4px; padding-top: 12px; border-top: 1px solid var(--border); width: 100%; background: none; border-left: none; border-right: none; border-bottom: none; cursor: pointer; transition: gap 0.2s; }
+  .eje-card-cta:hover { gap: 8px; }
+
+  /* ── IMPACT STRIP ── */
+  .impact-strip { background: white; border-bottom: 1px solid var(--border); padding: 18px 32px; }
+  .impact-header { margin-bottom: 14px; }
+  .impact-header h2 { font-family: 'Nunito',sans-serif; font-weight: 900; font-size: 17px; color: var(--text); }
+  .impact-header p { font-size: 11.5px; color: var(--text-muted); margin-top: 2px; }
+  .impact-numbers { display: grid; grid-template-columns: repeat(6,1fr); gap: 12px; }
+  .impact-num { display: flex; align-items: center; gap: 10px; }
+  .impact-dot { width: 30px; height: 30px; border-radius: 50%; border: 3px solid; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+  .impact-dot-inner { width: 9px; height: 9px; border-radius: 50%; border: 2px solid; }
+  .impact-value { font-family: 'Nunito',sans-serif; font-weight: 900; font-size: 17px; color: var(--text); line-height: 1; }
+  .impact-label { font-size: 10.5px; color: var(--text-muted); line-height: 1.3; margin-top: 2px; }
+
+  /* ── SECTION INNER ── */
+  .section-inner { padding: 28px 32px; }
+  .section-title-row { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 8px; }
+  .section-title { font-family: 'Nunito',sans-serif; font-weight: 900; font-size: 20px; color: var(--text); }
+  .link-all { color: var(--pink); font-family: 'Nunito',sans-serif; font-weight: 700; font-size: 12.5px; display: flex; align-items: center; gap: 4px; cursor: pointer; text-decoration: none; transition: gap 0.2s; }
+  .link-all:hover { gap: 8px; }
+
+  /* ── PROJECT CARDS ── */
+  .projects-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(200px,1fr)); gap: 14px; }
+  .project-card { background: white; border-radius: 16px; padding: 18px 14px; border: 1px solid var(--border); transition: transform 0.2s,box-shadow 0.2s; }
+  .project-card:hover { transform: translateY(-4px); box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+  .proj-tag { font-family: 'Nunito',sans-serif; font-weight: 800; font-size: 9px; letter-spacing: 0.8px; text-transform: uppercase; margin-bottom: 7px; }
+  .proj-title { font-family: 'Nunito',sans-serif; font-weight: 800; font-size: 14px; color: var(--text); line-height: 1.3; margin-bottom: 7px; }
+  .proj-desc { font-size: 11px; color: var(--text-muted); line-height: 1.5; margin-bottom: 12px; }
+  .proj-alcance-label { font-size: 9.5px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
+  .proj-alcance-value { font-family: 'Nunito',sans-serif; font-weight: 900; font-size: 22px; line-height: 1; margin: 2px 0; }
+  .proj-alcance-unit { font-size: 10.5px; color: var(--text-muted); margin-bottom: 9px; }
+  .proj-status { display: inline-block; font-family: 'Nunito',sans-serif; font-weight: 700; font-size: 9.5px; padding: 3px 9px; border-radius: 20px; background: var(--bg); color: var(--text-muted); }
+
+  /* ── EJE DETAIL ── */
+  .eje-section-hero { padding: 28px 32px 22px; }
+  .eje-section-back { background: none; border: none; color: rgba(255,255,255,0.7); cursor: pointer; font-family: 'Nunito',sans-serif; font-weight: 700; font-size: 12px; display: flex; align-items: center; gap: 5px; padding: 6px 0; transition: color 0.2s; margin-bottom: 8px; }
+  .eje-section-back:hover { color: white; }
+  .eje-section-title { font-family: 'Nunito',sans-serif; font-weight: 900; font-size: 26px; color: white; line-height: 1.1; }
+  .eje-section-sub { font-size: 13px; color: rgba(255,255,255,0.65); margin-top: 4px; max-width: 560px; }
+
+  /* ── IMPACTO ── */
+  .impacto-hero { background: linear-gradient(135deg,var(--navy) 0%,#2a3560 100%); padding: 36px 32px; color: white; }
+  .impacto-title { font-family: 'Nunito',sans-serif; font-weight: 900; font-size: 26px; margin-bottom: 6px; }
+  .impacto-subtitle { color: rgba(255,255,255,0.65); font-size: 13px; margin-bottom: 28px; }
+  .impacto-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; }
+  .impacto-card { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); border-radius: 14px; padding: 18px; backdrop-filter: blur(4px); transition: background 0.2s; }
+  .impacto-card:hover { background: rgba(255,255,255,0.13); }
+  .impacto-num { font-family: 'Nunito',sans-serif; font-weight: 900; font-size: 32px; line-height: 1; margin-bottom: 4px; }
+  .impacto-card-label { font-size: 12px; color: rgba(255,255,255,0.7); line-height: 1.4; }
+  .impacto-detail { padding: 28px 32px; display: grid; grid-template-columns: repeat(auto-fill,minmax(160px,1fr)); gap: 14px; }
+  .impacto-detail-card { background: white; border-radius: 14px; padding: 16px 12px; border: 1px solid var(--border); text-align: center; }
+  .impacto-cat-icon { width: 46px; height: 46px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 8px; }
+  .impacto-cat-name { font-family: 'Nunito',sans-serif; font-weight: 800; font-size: 11.5px; margin-bottom: 6px; color: var(--text); }
+  .impacto-cat-num { font-family: 'Nunito',sans-serif; font-weight: 900; font-size: 26px; line-height: 1; margin-bottom: 2px; }
+  .impacto-cat-sub { font-size: 10px; color: var(--text-muted); }
+
+  /* ── NOVEDADES ── */
+  .novedades-grid { padding: 28px 32px; display: grid; grid-template-columns: repeat(auto-fill,minmax(260px,1fr)); gap: 18px; }
+  .novedad-card { background: white; border-radius: 16px; overflow: hidden; border: 1px solid var(--border); transition: transform 0.2s,box-shadow 0.2s; }
+  .novedad-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(0,0,0,0.1); }
+  .novedad-img { height: 100px; display: flex; align-items: center; justify-content: center; font-size: 32px; }
+  .novedad-body { padding: 16px; }
+  .novedad-tag { display: inline-block; font-family: 'Nunito',sans-serif; font-weight: 800; font-size: 9.5px; letter-spacing: 0.8px; text-transform: uppercase; padding: 3px 9px; border-radius: 20px; margin-bottom: 8px; }
+  .novedad-title { font-family: 'Nunito',sans-serif; font-weight: 800; font-size: 14px; color: var(--text); line-height: 1.35; margin-bottom: 7px; }
+  .novedad-desc { font-size: 11.5px; color: var(--text-muted); line-height: 1.55; }
+
+  .divider { height: 1px; background: var(--border); margin: 0 32px; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 900px) {
+    .hero { padding: 24px 18px; gap: 20px; }
+    .hero-cards { grid-template-columns: 1fr; }
+    .hero-left { flex: none; width: 100%; }
+    .hero-title { font-size: 28px; }
+    .hero-desc { max-width: 100%; }
+    .impact-numbers { grid-template-columns: repeat(2,1fr); }
+    .impacto-grid { grid-template-columns: 1fr 1fr; }
+    .section-inner { padding: 20px 18px; }
+    .novedades-grid { padding: 20px 18px; }
+    .impacto-detail { padding: 20px 18px; }
+    .impact-strip { padding: 16px 18px; }
+    nav { padding: 0 14px; height: 52px; }
+    .nav-brand-text { display: none; }
+    .btn-gerencia { display: none; }
+    .eje-section-hero { padding: 20px 18px 16px; }
+    .impacto-hero { padding: 24px 18px; }
+  }
+  @media (max-width: 600px) {
+    .hero-cards { grid-template-columns: 1fr; }
+    .impact-numbers { grid-template-columns: 1fr 1fr; }
+    .projects-grid { grid-template-columns: 1fr; }
+    .impacto-grid { grid-template-columns: 1fr; }
+    .novedades-grid { grid-template-columns: 1fr; }
+    .impacto-detail { grid-template-columns: 1fr 1fr; }
+    .nav-links { gap: 0; }
+    .nav-btn { font-size: 10px; padding: 5px 7px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div id="loading-overlay">
+  <div><span class="loader-dot"></span><span class="loader-dot"></span><span class="loader-dot"></span></div>
+  <div class="loader-text">Cargando datos…</div>
+</div>
+
+<!-- BANNER -->
+<div class="update-banner">
+  <span>🗓️ Última actualización:</span>
+  <strong id="id-ultima-actualizacion">—</strong>
+  <span>· Gerencia de Educación Digital · Buenos Aires Aprende</span>
+</div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-brand">
+    <div class="nav-brand-icon"><svg viewBox="0 0 20 20"><path d="M10 2L2 6v8l8 4 8-4V6L10 2zM10 4.2l5.6 2.8-5.6 2.8L4.4 7 10 4.2zM3.5 8.5l6 3V17l-6-3V8.5zm7.5 3l6-3v5.5l-6 3V11.5z"/></svg></div>
+    <div class="nav-brand-text">Educación Digital<span>Buenos Aires aprende</span></div>
+  </div>
+  <div class="nav-links">
+    <button class="nav-btn active" onclick="showSection('inicio')">INICIO</button>
+    <button class="nav-btn" onclick="showSection('impacto')">IMPACTO</button>
+    <button class="nav-btn" onclick="showSection('novedades')">NOVEDADES</button>
+  </div>
+  <div class="nav-right">
+    <a href="https://educaciondigital.bue.edu.ar/institucional" target="_blank" class="btn-gerencia">Acerca de la Gerencia ↗</a>
+  </div>
+</nav>
+
+<!-- ══ INICIO ══════════════════════════════════════════════════════════════ -->
+<div id="inicio" class="section active">
+  <div class="hero">
+    <div class="hero-left">
+      <div class="hero-eyebrow">Buenos Aires aprende</div>
+      <h1 class="hero-title">Educación<br>Digital<br><em>en acción</em></h1>
+      <p class="hero-desc">Conocé los proyectos, programas y acciones que impulsamos para transformar la educación de la Ciudad con innovación, tecnología y foco en las personas.</p>
+      <button class="btn-hero" onclick="showSection('impacto')">Ver impacto 2025–2026 →</button>
+    </div>
+    <div class="hero-cards">
+      <!-- BIAL -->
+      <div class="eje-card" onclick="showSection('eje-bial')" tabindex="0" onkeydown="if(event.key==='Enter')showSection('eje-bial')">
+        <div style="position:absolute;top:-18px;right:-18px;width:90px;height:90px;border-radius:50%;background:rgba(232,25,90,0.07);pointer-events:none;"></div>
+        <div class="eje-card-icon" style="background:var(--pink-light);">
+          <svg width="26" height="26" viewBox="0 0 40 40" fill="none"><circle cx="20" cy="20" r="16" stroke="#e8195a" stroke-width="2.5" fill="#fce4ed" fill-opacity="0.5"/><circle cx="20" cy="20" r="8" stroke="#e8195a" stroke-width="2" fill="none"/><circle cx="20" cy="20" r="3" fill="#e8195a"/></svg>
+        </div>
+        <div class="eje-card-supertitle" style="color:var(--pink);">Plan de</div>
+        <div class="eje-card-title">Bialfabetización + IA</div>
+        <div class="eje-card-desc" id="bial_desc">…</div>
+        <div class="eje-card-metrics">
+          <div><div class="eje-card-metric-val" style="color:var(--pink);" id="bial_m1v">—</div><div class="eje-card-metric-lbl" id="bial_m1l">—</div></div>
+          <div><div class="eje-card-metric-val" style="color:var(--pink);" id="bial_m2v">—</div><div class="eje-card-metric-lbl" id="bial_m2l">—</div></div>
+        </div>
+        <button class="eje-card-cta" style="color:var(--pink);" onclick="event.stopPropagation();showSection('eje-bial')">Ver proyectos →</button>
+      </div>
+      <!-- IA -->
+      <div class="eje-card" onclick="showSection('eje-ia')" tabindex="0" onkeydown="if(event.key==='Enter')showSection('eje-ia')">
+        <div style="position:absolute;top:-18px;right:-18px;width:90px;height:90px;border-radius:50%;background:rgba(43,196,180,0.07);pointer-events:none;"></div>
+        <div class="eje-card-icon" style="background:var(--teal-light);">
+          <svg width="26" height="26" viewBox="0 0 40 40" fill="none"><circle cx="20" cy="20" r="16" stroke="#2bc4b4" stroke-width="2.5" fill="#c8f0ec" fill-opacity="0.5"/><circle cx="20" cy="20" r="8" stroke="#2bc4b4" stroke-width="2" fill="none"/><circle cx="20" cy="20" r="3" fill="#2bc4b4"/></svg>
+        </div>
+        <div class="eje-card-supertitle" style="color:var(--teal);">Eje estratégico</div>
+        <div class="eje-card-title">Inteligencia Artificial</div>
+        <div class="eje-card-desc" id="ia_desc">…</div>
+        <div class="eje-card-metrics">
+          <div><div class="eje-card-metric-val" style="color:var(--teal);" id="ia_m1v">—</div><div class="eje-card-metric-lbl" id="ia_m1l">—</div></div>
+          <div><div class="eje-card-metric-val" style="color:var(--teal);" id="ia_m2v">—</div><div class="eje-card-metric-lbl" id="ia_m2l">—</div></div>
+        </div>
+        <button class="eje-card-cta" style="color:var(--teal);" onclick="event.stopPropagation();showSection('eje-ia')">Ver proyectos →</button>
+      </div>
+      <!-- PROT -->
+      <div class="eje-card" onclick="showSection('eje-prot')" tabindex="0" onkeydown="if(event.key==='Enter')showSection('eje-prot')">
+        <div style="position:absolute;top:-18px;right:-18px;width:90px;height:90px;border-radius:50%;background:rgba(124,77,189,0.07);pointer-events:none;"></div>
+        <div class="eje-card-icon" style="background:var(--purple-light);">
+          <svg width="26" height="26" viewBox="0 0 40 40" fill="none"><circle cx="20" cy="20" r="16" stroke="#7c4dbd" stroke-width="2.5" fill="#e4d8f5" fill-opacity="0.5"/><circle cx="20" cy="20" r="8" stroke="#7c4dbd" stroke-width="2" fill="none"/><circle cx="20" cy="20" r="3" fill="#7c4dbd"/></svg>
+        </div>
+        <div class="eje-card-supertitle" style="color:var(--purple);">Política Prioritaria</div>
+        <div class="eje-card-title">Protección Digital Infantil y Adolescente</div>
+        <div class="eje-card-desc" id="prot_desc">…</div>
+        <div class="eje-card-metrics">
+          <div><div class="eje-card-metric-val" style="color:var(--purple);" id="prot_m1v">—</div><div class="eje-card-metric-lbl" id="prot_m1l">—</div></div>
+          <div><div class="eje-card-metric-val" style="color:var(--purple);" id="prot_m2v">—</div><div class="eje-card-metric-lbl" id="prot_m2l">—</div></div>
+        </div>
+        <button class="eje-card-cta" style="color:var(--purple);" onclick="event.stopPropagation();showSection('eje-prot')">Ver proyectos →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- INDICADORES -->
+  <div class="impact-strip">
+    <div class="impact-header"><h2>Nuestro alcance e impacto</h2><p>Datos acumulados 2025–2026</p></div>
+    <div class="impact-numbers">
+      <div class="impact-num"><div class="impact-dot" style="border-color:var(--pink)"><div class="impact-dot-inner" style="border-color:var(--pink)"></div></div><div><div class="impact-value" id="ind_estudiantes">—</div><div class="impact-label">Estudiantes alcanzados</div></div></div>
+      <div class="impact-num"><div class="impact-dot" style="border-color:var(--teal)"><div class="impact-dot-inner" style="border-color:var(--teal)"></div></div><div><div class="impact-value" id="ind_docentes">—</div><div class="impact-label">Docentes formados</div></div></div>
+      <div class="impact-num"><div class="impact-dot" style="border-color:var(--purple)"><div class="impact-dot-inner" style="border-color:var(--purple)"></div></div><div><div class="impact-value" id="ind_escuelas">—</div><div class="impact-label">Escuelas participantes</div></div></div>
+      <div class="impact-num"><div class="impact-dot" style="border-color:var(--yellow)"><div class="impact-dot-inner" style="border-color:var(--yellow)"></div></div><div><div class="impact-value" id="ind_referentes">—</div><div class="impact-label">Referentes en protección digital</div></div></div>
+      <div class="impact-num"><div class="impact-dot" style="border-color:var(--blue)"><div class="impact-dot-inner" style="border-color:var(--blue)"></div></div><div><div class="impact-value" id="ind_recursos">—</div><div class="impact-label">Recursos digitales publicados</div></div></div>
+      <div class="impact-num"><div class="impact-dot" style="border-color:var(--green)"><div class="impact-dot-inner" style="border-color:var(--green)"></div></div><div><div class="impact-value" id="ind_plataformas">—</div><div class="impact-label">Plataformas y herramientas activas</div></div></div>
+    </div>
+  </div>
+
+  <!-- NOVEDADES PREVIEW -->
+  <div style="padding:24px 32px 32px;">
+    <div class="section-title-row">
+      <div class="section-title">Novedades</div>
+      <a class="link-all" onclick="showSection('novedades')">Ver todas →</a>
+    </div>
+    <div id="novedades-preview" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px;"></div>
+  </div>
+</div>
+
+<!-- ══ EJE BIAL ════════════════════════════════════════════════════════════ -->
+<div id="eje-bial" class="section">
+  <div class="eje-section-hero" style="background:var(--navy);">
+    <button class="eje-section-back" onclick="showSection('inicio')">← Volver al inicio</button>
+    <div style="color:var(--pink);font-family:'Nunito',sans-serif;font-weight:900;font-size:11px;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:4px;">Plan de</div>
+    <div class="eje-section-title">Bialfabetización + IA</div>
+    <div class="eje-section-sub">Proyectos 2026 · Avatares, lectura digital y producción multimodal.</div>
+  </div>
+  <div class="section-inner">
+    <div class="section-title" style="margin-bottom:18px;">Proyectos del eje · 2026</div>
+    <div class="projects-grid" id="grid-bial"></div>
+  </div>
+</div>
+
+<!-- ══ EJE IA ══════════════════════════════════════════════════════════════ -->
+<div id="eje-ia" class="section">
+  <div class="eje-section-hero" style="background:var(--navy);">
+    <button class="eje-section-back" onclick="showSection('inicio')">← Volver al inicio</button>
+    <div style="color:var(--teal);font-family:'Nunito',sans-serif;font-weight:900;font-size:11px;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:4px;">Eje estratégico</div>
+    <div class="eje-section-title">Inteligencia Artificial</div>
+    <div class="eje-section-sub">Proyectos 2026 · Gemini, formación docente en IA y gestión inteligente.</div>
+  </div>
+  <div class="section-inner">
+    <div class="section-title" style="margin-bottom:18px;">Proyectos del eje · 2026</div>
+    <div class="projects-grid" id="grid-ia"></div>
+  </div>
+</div>
+
+<!-- ══ EJE PROT ════════════════════════════════════════════════════════════ -->
+<div id="eje-prot" class="section">
+  <div class="eje-section-hero" style="background:var(--navy);">
+    <button class="eje-section-back" onclick="showSection('inicio')">← Volver al inicio</button>
+    <div style="color:var(--purple);font-family:'Nunito',sans-serif;font-weight:900;font-size:11px;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:4px;">Política Prioritaria</div>
+    <div class="eje-section-title">Protección Digital Infantil y Adolescente</div>
+    <div class="eje-section-sub">Proyectos 2026 · Red de referentes, ciudadanía digital y estrategia integral.</div>
+  </div>
+  <div class="section-inner">
+    <div class="section-title" style="margin-bottom:18px;">Proyectos del eje · 2026</div>
+    <div class="projects-grid" id="grid-prot"></div>
+  </div>
+</div>
+
+<!-- ══ IMPACTO ════════════════════════════════════════════════════════════ -->
+<div id="impacto" class="section">
+  <div class="impacto-hero">
+    <div class="impacto-title">Impacto de la Gerencia de <span style="color:var(--pink)">Educación Digital</span></div>
+    <div class="impacto-subtitle">Datos acumulados del período 2025–2026 · Ciudad Autónoma de Buenos Aires</div>
+    <div class="impacto-grid">
+      <div class="impacto-card"><div class="impacto-num" style="color:var(--pink)" id="imp_estudiantes">—</div><div class="impacto-card-label">Estudiantes alcanzados por alguno de nuestros programas</div></div>
+      <div class="impacto-card"><div class="impacto-num" style="color:var(--teal)" id="imp_docentes">—</div><div class="impacto-card-label">Docentes formados en tecnología educativa e IA</div></div>
+      <div class="impacto-card"><div class="impacto-num" style="color:var(--purple)" id="imp_escuelas">—</div><div class="impacto-card-label">Escuelas participando activamente en nuestros programas</div></div>
+    </div>
+  </div>
+  <div class="impacto-detail">
+    <div class="impacto-detail-card">
+      <div class="impacto-cat-icon" style="background:var(--pink-light)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="#e8195a" stroke-width="2"/><circle cx="12" cy="12" r="4" stroke="#e8195a" stroke-width="1.5"/><circle cx="12" cy="12" r="1.5" fill="#e8195a"/></svg></div>
+      <div class="impacto-cat-name">Bialfabetización</div>
+      <div class="impacto-cat-num" style="color:var(--pink)" id="imp_bial_val">—</div>
+      <div class="impacto-cat-sub">estudiantes</div>
+    </div>
+    <div class="impacto-detail-card">
+      <div class="impacto-cat-icon" style="background:var(--teal-light)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="#2bc4b4" stroke-width="2"/><circle cx="12" cy="12" r="4" stroke="#2bc4b4" stroke-width="1.5"/><circle cx="12" cy="12" r="1.5" fill="#2bc4b4"/></svg></div>
+      <div class="impacto-cat-name">Inteligencia Artificial</div>
+      <div class="impacto-cat-num" style="color:var(--teal)" id="imp_ia_val">—</div>
+      <div class="impacto-cat-sub">escuelas con IA</div>
+    </div>
+    <div class="impacto-detail-card">
+      <div class="impacto-cat-icon" style="background:var(--purple-light)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="#7c4dbd" stroke-width="2"/><circle cx="12" cy="12" r="4" stroke="#7c4dbd" stroke-width="1.5"/><circle cx="12" cy="12" r="1.5" fill="#7c4dbd"/></svg></div>
+      <div class="impacto-cat-name">Protección Digital</div>
+      <div class="impacto-cat-num" style="color:var(--purple)" id="imp_prot_val">—</div>
+      <div class="impacto-cat-sub">referentes escolares</div>
+    </div>
+    <div class="impacto-detail-card">
+      <div class="impacto-cat-icon" style="background:var(--yellow-light)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="#f5a623" stroke-width="2"/><circle cx="12" cy="12" r="4" stroke="#f5a623" stroke-width="1.5"/><circle cx="12" cy="12" r="1.5" fill="#f5a623"/></svg></div>
+      <div class="impacto-cat-name">Formación Docente</div>
+      <div class="impacto-cat-num" style="color:var(--yellow)" id="imp_form_val">—</div>
+      <div class="impacto-cat-sub">docentes formados</div>
+    </div>
+    <div class="impacto-detail-card">
+      <div class="impacto-cat-icon" style="background:var(--blue-light)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="#4a90d9" stroke-width="2"/><circle cx="12" cy="12" r="4" stroke="#4a90d9" stroke-width="1.5"/><circle cx="12" cy="12" r="1.5" fill="#4a90d9"/></svg></div>
+      <div class="impacto-cat-name">Innovación y Plataformas</div>
+      <div class="impacto-cat-num" style="color:var(--blue)" id="imp_plat_val">—</div>
+      <div class="impacto-cat-sub">plataformas activas</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ NOVEDADES ══════════════════════════════════════════════════════════ -->
+<div id="novedades" class="section">
+  <div style="background:var(--navy);padding:28px 32px 22px">
+    <div style="color:rgba(255,255,255,0.5);font-size:11px;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px;">Últimas actualizaciones</div>
+    <h2 style="font-family:'Nunito',sans-serif;font-weight:900;font-size:26px;color:white;">Novedades <span style="color:var(--pink)">2026</span></h2>
+    <p style="color:rgba(255,255,255,0.55);font-size:12.5px;margin-top:6px;">Próximas acciones e hitos relevantes de la Gerencia de Educación Digital.</p>
+  </div>
+  <div class="novedades-grid" id="novedades-container"></div>
+</div>
+
+
+<!-- ══ SCRIPT ══════════════════════════════════════════════════════════════ -->
+<script>
+/* ─────────────────────────────────────────────────────────────────────────
+   ▼▼▼  ÚNICA LÍNEA QUE HAY QUE EDITAR  ▼▼▼
+   Pegá acá la URL del Web App de Google Apps Script
+   (ver instrucciones en el archivo apps_script_proxy.js)
+   ───────────────────────────────────────────────────────────────────────── */
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzHzr7mD7SaUzLc2gbMhNR6al8U5R2bmuOQcvJIuiCuewI2BqNtzUPA1NmcfJUuVsy9/exec';
+/* ─────────────────────────────────────────────────────────────────────────
+   ▲▲▲  ÚNICA LÍNEA QUE HAY QUE EDITAR  ▲▲▲
+   ───────────────────────────────────────────────────────────────────────── */
+
+// ── NAVEGACIÓN ────────────────────────────────────────────────────────────
+const ALL_SECTIONS = ['inicio','eje-bial','eje-ia','eje-prot','impacto','novedades'];
+const NAV_IDX      = { inicio: 0, impacto: 1, novedades: 2 };
+
+function showSection(id) {
+  ALL_SECTIONS.forEach(s => { const el = document.getElementById(s); if (el) el.classList.remove('active'); });
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  const target = document.getElementById(id);
+  if (target) target.classList.add('active');
+  if (NAV_IDX[id] !== undefined) { const btns = document.querySelectorAll('.nav-btn'); if (btns[NAV_IDX[id]]) btns[NAV_IDX[id]].classList.add('active'); }
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ── COLORES POR CATEGORÍA ─────────────────────────────────────────────────
+const TAG_COLORS = {
+  'inteligencia artificial': { bg:'var(--teal-light)',   fg:'var(--teal)'   },
+  'bialfabetización':        { bg:'var(--pink-light)',   fg:'var(--pink)'   },
+  'protección digital':      { bg:'var(--purple-light)', fg:'var(--purple)' },
+  'formación docente':       { bg:'var(--yellow-light)', fg:'var(--yellow)' },
+  'innovación y plataformas':{ bg:'var(--blue-light)',   fg:'var(--blue)'   },
+};
+function tagColor(tag) {
+  return TAG_COLORS[(tag||'').toLowerCase()] || { bg:'var(--bg)', fg:'var(--navy)' };
+}
+
+// ── HELPERS ───────────────────────────────────────────────────────────────
+function set(id, val) {
+  const el = document.getElementById(id);
+  if (el && val && String(val).trim()) el.textContent = val;
+}
+
+function buildProjectCard(color, tag, title, desc, val, unit, status) {
+  if (!title || !title.trim()) return null;
+  const card = document.createElement('div');
+  card.className = 'project-card';
+  card.innerHTML = `
+    <div class="proj-tag" style="color:${color}">${tag}</div>
+    <div class="proj-title">${title}</div>
+    <div class="proj-desc">${desc || ''}</div>
+    <div class="proj-alcance-label">Alcance</div>
+    <div class="proj-alcance-value" style="color:${color}">${val || ''}</div>
+    <div class="proj-alcance-unit">${unit || ''}</div>
+    <span class="proj-status">${status || ''}</span>`;
+  return card;
+}
+
+function buildNovedadCard(emoji, tag, title, desc) {
+  if (!title || !title.trim()) return null;
+  const c = tagColor(tag);
+  const card = document.createElement('div');
+  card.className = 'novedad-card';
+  card.innerHTML = `
+    <div class="novedad-img" style="background:${c.bg}">${emoji || '📌'}</div>
+    <div class="novedad-body">
+      <span class="novedad-tag" style="background:${c.bg};color:${c.fg}">${tag || ''}</span>
+      <div class="novedad-title">${title}</div>
+      <div class="novedad-desc">${desc || ''}</div>
+    </div>`;
+  return card;
+}
+
+// ── INYECCIÓN DE DATOS ────────────────────────────────────────────────────
+function applyData(d) {
+  // Fecha
+  set('id-ultima-actualizacion', d.fecha);
+
+  // Tarjetas
+  set('bial_desc', d.bial_desc); set('bial_m1v', d.bial_m1v); set('bial_m1l', d.bial_m1l); set('bial_m2v', d.bial_m2v); set('bial_m2l', d.bial_m2l);
+  set('ia_desc',   d.ia_desc);   set('ia_m1v',   d.ia_m1v);   set('ia_m1l',   d.ia_m1l);   set('ia_m2v',   d.ia_m2v);   set('ia_m2l',   d.ia_m2l);
+  set('prot_desc', d.prot_desc); set('prot_m1v', d.prot_m1v); set('prot_m1l', d.prot_m1l); set('prot_m2v', d.prot_m2v); set('prot_m2l', d.prot_m2l);
+
+  // Indicadores
+  set('ind_estudiantes', d.ind_estudiantes); set('ind_docentes',   d.ind_docentes);
+  set('ind_escuelas',    d.ind_escuelas);    set('ind_referentes', d.ind_referentes);
+  set('ind_recursos',    d.ind_recursos);    set('ind_plataformas',d.ind_plataformas);
+
+  // Sección Impacto
+  set('imp_estudiantes', d.ind_estudiantes); set('imp_docentes', d.ind_docentes); set('imp_escuelas', d.ind_escuelas);
+  set('imp_bial_val', d.bial_p1_val); set('imp_ia_val', d.ia_p1_val); set('imp_prot_val', d.prot_p1_val);
+  set('imp_form_val', d.ia_m2v); set('imp_plat_val', d.ind_plataformas);
+
+  // Proyectos
+  const grids = {
+    'grid-bial': { color:'var(--pink)',   tag:'BIALFABETIZACIÓN',    prefix:'bial', max:5 },
+    'grid-ia':   { color:'var(--teal)',   tag:'INTELIGENCIA ARTIFICIAL', prefix:'ia', max:4 },
+    'grid-prot': { color:'var(--purple)', tag:'PROTECCIÓN DIGITAL',  prefix:'prot', max:3 },
+  };
+  for (const [gridId, cfg] of Object.entries(grids)) {
+    const grid = document.getElementById(gridId);
+    grid.innerHTML = '';
+    for (let n = 1; n <= cfg.max; n++) {
+      const p = cfg.prefix;
+      const card = buildProjectCard(cfg.color, cfg.tag,
+        d[`${p}_p${n}_title`], d[`${p}_p${n}_desc`],
+        d[`${p}_p${n}_val`],   d[`${p}_p${n}_unit`], d[`${p}_p${n}_status`]);
+      if (card) grid.appendChild(card);
+    }
+  }
+
+  // Novedades
+  const container = document.getElementById('novedades-container');
+  const preview   = document.getElementById('novedades-preview');
+  container.innerHTML = '';
+  preview.innerHTML   = '';
+  let prevCount = 0;
+  for (let n = 1; n <= 6; n++) {
+    const card = buildNovedadCard(d[`nov_${n}_emoji`], d[`nov_${n}_tag`], d[`nov_${n}_title`], d[`nov_${n}_desc`]);
+    if (card) {
+      container.appendChild(card);
+      if (prevCount < 3) { preview.appendChild(card.cloneNode(true)); prevCount++; }
+    }
+  }
+}
+
+// ── FETCH DESDE APPS SCRIPT ───────────────────────────────────────────────
+async function loadData() {
+  const overlay = document.getElementById('loading-overlay');
+
+  if (!SCRIPT_URL || SCRIPT_URL === 'PEGAR_URL_DEL_WEB_APP_ACÁ') {
+    overlay.classList.add('hidden');
+    setTimeout(() => overlay.style.display = 'none', 500);
+    return;
+  }
+
+  try {
+    const res  = await fetch(SCRIPT_URL);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+    applyData(data);
+  } catch (err) {
+    console.warn('Error cargando datos:', err);
+  }
+
+  overlay.classList.add('hidden');
+  setTimeout(() => overlay.style.display = 'none', 500);
+}
+
+loadData();
+</script>
+</body>
+</html>
