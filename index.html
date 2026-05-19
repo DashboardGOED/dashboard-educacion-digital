@@ -81,11 +81,12 @@
 
   /* ── TARJETAS EJES ── */
   .hero-cards { flex: 1; display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; min-width: 0; }
-  .eje-card { background: white; border-radius: 16px; padding: 22px 20px; text-align: left; position: relative; overflow: hidden; cursor: pointer; transition: transform 0.2s,box-shadow 0.2s; }
+  .eje-card { background: white; border-radius: 16px; padding: 22px 20px; text-align: left; position: relative; overflow: hidden; cursor: pointer; transition: transform 0.2s,box-shadow 0.2s; display: flex; flex-direction: column; }
   .eje-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(0,0,0,0.18); }
   .eje-card-icon { width: 46px; height: 46px; border-radius: 14px; display: flex; align-items: center; justify-content: center; margin-bottom: 12px; }
   .eje-card-supertitle{font-family:'Nunito',sans-serif;font-weight:900;font-size:10px;text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px;min-height:32px;display:flex;align-items:flex-end}
-  .eje-card-title{font-family:'Nunito',sans-serif;font-weight:900;font-size:15px;color:var(--text);line-height:1.2;margin-bottom:10px;min-height:48px}  .eje-card-desc { font-size: 11.5px; color: var(--text-muted); line-height: 1.55; margin-bottom: 14px; min-height: 52px; }
+  .eje-card-title{font-family:'Nunito',sans-serif;font-weight:900;font-size:15px;color:var(--text);line-height:1.2;margin-bottom:10px;min-height:48px}  
+  .eje-card-desc{font-size:11.5px;color:var(--text-muted);line-height:1.55;margin-bottom:14px;flex:1}
   .eje-card-metrics { display: flex; gap: 14px; margin-bottom: 14px; }
   .eje-card-metric-val { font-family: 'Nunito',sans-serif; font-weight: 900; font-size: 20px; line-height: 1; }
   .eje-card-metric-lbl { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
